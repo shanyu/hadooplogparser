@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.file.tfile.TFile;
@@ -28,18 +29,14 @@ public class TFileParser {
   
   void parseOneFile(Path path) 
       throws Exception {
-    String outFileName = path.toString();
-    System.out.println("converting " + outFileName);
-    if(outFileName.startsWith("file:/")) {
-      //get rid of file:/
-      outFileName = outFileName.substring(6);
-    }
-    outFileName += ".txt";
-    System.out.println("writting to " + outFileName);
+    Path outPath = path.suffix(".txt");
+    System.out.println("converting " + path);
+    System.out.println("writting to " + outPath);
     
     try (
-      final BufferedWriter outWriter= new BufferedWriter(new FileWriter(outFileName));
+      final FSDataOutputStream fsdos = _fs.create(outPath);
       final FSDataInputStream fsdis = _fs.open(path);
+      final OutputStreamWriter outWriter = new OutputStreamWriter(fsdos);
       final TFile.Reader reader =
         new TFile.Reader(fsdis, _fs.getFileStatus(path).getLen(), _conf);
       final TFile.Reader.Scanner scanner = reader.createScanner()
