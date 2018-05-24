@@ -5,6 +5,9 @@ import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.File;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -14,31 +17,31 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.file.tfile.TFile;
 
 /**
- * Parse TFile's content to key value pair
- * @author shzhao
- *
+ * Parse TFile's content to key value pair, and store in local destLocalFolder
  */
 public class TFileParser {
-  FileSystem _fs;
-  Configuration _conf;
+  private FileSystem _fs;
+  private Configuration _conf;
+  private String _destLocalFolder;
   
-  public TFileParser(Configuration conf, FileSystem fs) {
+  public TFileParser(Configuration conf, FileSystem fs, String destLocalFolder) {
     _conf = conf;
     _fs = fs;
+    _destLocalFolder = destLocalFolder;
   }
   
-  void parseOneFile(Path path) 
-      throws Exception {
-    Path outPath = path.suffix(".txt");
-    System.out.println("converting " + path);
-    System.out.println("writting to " + outPath);
+  void parseOneFile(Path srcPath)
+      throws FileNotFoundException, IOException {
+    String destLocalPath = _destLocalFolder + File.separator + srcPath.getName() + ".txt";
+    System.out.println("===================================");
+    System.out.println("converting " + srcPath);
+    System.out.println("writting to " + destLocalPath);
     
     try (
-      final FSDataOutputStream fsdos = _fs.create(outPath);
-      final FSDataInputStream fsdis = _fs.open(path);
-      final OutputStreamWriter outWriter = new OutputStreamWriter(fsdos);
+      final FSDataInputStream fsdis = _fs.open(srcPath);
+      final OutputStreamWriter outWriter = new OutputStreamWriter(new FileOutputStream(destLocalPath), "utf-8");
       final TFile.Reader reader =
-        new TFile.Reader(fsdis, _fs.getFileStatus(path).getLen(), _conf);
+        new TFile.Reader(fsdis, _fs.getFileStatus(srcPath).getLen(), _conf);
       final TFile.Reader.Scanner scanner = reader.createScanner()
     ) {
       int count = 0;
