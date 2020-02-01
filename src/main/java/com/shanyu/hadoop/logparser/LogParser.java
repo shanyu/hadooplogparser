@@ -6,7 +6,6 @@ import java.io.DataInputStream;
 import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.File;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -44,8 +43,7 @@ public class LogParser
       String.format("WASB Account suffix, defaults to '%s'", DEFAULT_WASB_ACCOUNT_SUFFIX)));
     options.addOption(new Option("i", "applicationId", true, "Application ID"));
     options.addOption(new Option("d", "localDir", true, "Local Directory Path"));
-    Option output = new Option("o", "outputDir", true, "Output Directory Name");
-    output.setRequired(true);
+    Option output = new Option("o", "outputDir", true, "Output Directory Name (\"-\" prints to stdout)");
     options.addOption(output);
     
     CommandLine cmd = null;
@@ -114,7 +112,6 @@ public class LogParser
     
     Path path = new Path(srcPathDir);
     FileSystem fs = path.getFileSystem(conf);
-    new File(outputDir).mkdirs();
     TFileParser parser = new TFileParser(conf, fs, outputDir);
     FileStatus[] files = fs.listStatus(path);
     for(FileStatus file : files) {

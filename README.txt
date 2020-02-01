@@ -17,6 +17,8 @@ For HDInsight clusters, just download your logs on your home container located i
 
 Then each of the container logs will be parsed and written to a ".txt" file, along with the original log file.
 
+When -o option is not provided the parsed output will be written to stdout.
+
 [Download and Parse Logs from WASB]
 You can also use this tool to directly download Yarn application logs from Azure Storage account associated with an HDInsight cluster.
 
