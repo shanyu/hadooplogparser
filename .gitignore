@@ -3,3 +3,6 @@
 dependency-reduced-pom.xml
 target
 *.log
+.DS_Store
+.idea
+.settings

@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
+import java.io.OutputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -32,14 +33,22 @@ public class TFileParser {
   
   void parseOneFile(Path srcPath)
       throws FileNotFoundException, IOException {
-    String destLocalPath = _destLocalFolder + File.separator + srcPath.getName() + ".txt";
     System.out.println("===================================");
     System.out.println("converting " + srcPath);
-    System.out.println("writting to " + destLocalPath);
+    OutputStream outputStream = null;
+    if(_destLocalFolder == null || _destLocalFolder.equals("") || _destLocalFolder.equals("-")) {
+      outputStream = System.out;
+      System.out.println("writting to stdout");
+    } else {
+      new File(_destLocalFolder).mkdirs();
+      String destLocalPath = _destLocalFolder + File.separator + srcPath.getName() + ".txt";
+      outputStream = new FileOutputStream(destLocalPath);
+      System.out.println("writting to " + destLocalPath);
+    }
     
     try (
       final FSDataInputStream fsdis = _fs.open(srcPath);
-      final OutputStreamWriter outWriter = new OutputStreamWriter(new FileOutputStream(destLocalPath), "utf-8");
+      final OutputStreamWriter outWriter = new OutputStreamWriter(outputStream, "utf-8");
       final TFile.Reader reader =
         new TFile.Reader(fsdis, _fs.getFileStatus(srcPath).getLen(), _conf);
       final TFile.Reader.Scanner scanner = reader.createScanner()
